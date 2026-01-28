@@ -4,7 +4,7 @@
 using namespace std;
 
 int main() {
-    fstream datei ("main.exe", ios::binary | ios::in);
+    fstream datei ("test_groesser.txt", ios::binary | ios::in | ios::out);
 
     if (datei.bad()) {
         cerr << "Error opening file!" << endl;
@@ -14,7 +14,12 @@ int main() {
     begin = datei.tellg();
     datei.seekg(0, ios::end);
     end = datei.tellg();
-    datei.close();
     cout << "Size in bytes: " << (end - begin) << endl;
+    datei.seekp(12000000, ios::end);
+    datei.put('.');
+    datei.seekg(0, ios::end);
+    end = datei.tellg();
+    cout << "New Size in bytes: " << (end - begin) << endl;
+    datei.close();
     return 0;
 }
