@@ -44,8 +44,8 @@ void draw(SDL_Renderer *renderer) {
     SDL_Rect rect;
     rect.h = 40;
     rect.w = 40;
-    rect.y = y;
-    rect.x = x;
+    rect.y = y - 20;
+    rect.x = x - 20;
     
     SDL_SetRenderDrawColor(renderer, 0, 0 , 0, 255);
     SDL_RenderClear(renderer);
