@@ -1,25 +1,37 @@
+#define SDL_MAIN_HANDLED
 #include <iostream>
-#include <string>
-#include <fstream>
+#include <SDL2/SDL.h>
+#include "VYN.h"
 using namespace std;
 
-int main() {
-    fstream datei ("test_groesser.txt", ios::binary | ios::in | ios::out);
+const int HEIGHT = 600, WIDTH = 800;
 
-    if (datei.bad()) {
-        cerr << "Error opening file!" << endl;
-        return 1;
+
+int main(int argc, char* argv[]) {
+
+    //Setup für SDL renderer und Fenster
+    SDL_Window * window = init_SDL(WIDTH, HEIGHT);
+    if (window == nullptr) return EXIT_FAILURE;
+
+    SDL_Renderer *render = init_renderer(window);
+    if (render == nullptr) return EXIT_FAILURE;
+    
+    //SDL Eventschleife
+    SDL_Event event;
+    while ( true )
+    {
+        if ( SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+            {
+                break;
+            }
+            
+        }
+        
     }
-    streampos begin, end;
-    begin = datei.tellg();
-    datei.seekg(0, ios::end);
-    end = datei.tellg();
-    cout << "Size in bytes: " << (end - begin) << endl;
-    datei.seekp(12000000, ios::end);
-    datei.put('.');
-    datei.seekg(0, ios::end);
-    end = datei.tellg();
-    cout << "New Size in bytes: " << (end - begin) << endl;
-    datei.close();
-    return 0;
+    SDL_DestroyRenderer(render);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return EXIT_SUCCESS;
 }
