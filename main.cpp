@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     button1.width = 50;
     button1.hovered = false;
     button1.pressed = false;
-    button1.x = HEIGHT / 2;
-    button1.y = WIDTH / 2;
+    button1.x = WIDTH / 2;
+    button1.y = HEIGHT / 2;
     button1.color = {0, 0, 255, 255};
 
     //SDL Eventschleife
@@ -34,7 +34,19 @@ int main(int argc, char* argv[]) {
     {
         int mx, my;
         SDL_GetMouseState(&mx, &my);
-        button1.hovered =  mx >= button1.x && mx <= button1.x + button1.width && my >= button1.y && my <= button1.y + button1.height;
+        button1.hovered =  (mx >= button1.x && mx <= button1.x + button1.width) && (my >= button1.y && my <= button1.y + button1.height);
+        if (button1.hovered)
+        {
+            //cout << "hovered" << endl;
+            button1.height = 40;
+            button1.width = 60;
+        }
+        else {
+            //cout << "not hovered" << endl;
+            button1.height = 30;
+            button1.width = 50;
+        }
+        
         //draw(render);
         check_button(&button1, render);
         if ( SDL_PollEvent(&event))
@@ -52,10 +64,9 @@ int main(int argc, char* argv[]) {
                     button1.pressed = true;
                 }
             }
-            
-        }
         
     }
+}
     quit(render, window);
     return EXIT_SUCCESS;
 }

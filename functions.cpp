@@ -58,6 +58,7 @@ void draw(SDL_Renderer *renderer) {
 void check_button(Button *button, SDL_Renderer *renderer) {
 
     SDL_Rect button_rect;
+    cout << button->height << button->width << endl;
     button_rect.h = button->height;
     button_rect.w = button->width;
     button_rect.x = button->x;
@@ -66,6 +67,8 @@ void check_button(Button *button, SDL_Renderer *renderer) {
     {
         button->color = {0, 255, 0, 255};
     }
+    SDL_SetRenderDrawColor(renderer, 0, 0 , 0, 255);
+    SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, button->color.r, button->color.g, button->color.b, button->color.a);
     SDL_RenderFillRect(renderer, &button_rect);
     SDL_RenderPresent(renderer);
