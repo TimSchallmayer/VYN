@@ -38,11 +38,15 @@ int main(int argc, char* argv[]) {
         if (button1.hovered)
         {
             //cout << "hovered" << endl;
+            button1.y  = HEIGHT / 2 -5;
             button1.height = 40;
+            button1.x = WIDTH / 2 -5;
             button1.width = 60;
         }
         else {
             //cout << "not hovered" << endl;
+            button1.x = WIDTH / 2;
+            button1.y = HEIGHT / 2;
             button1.height = 30;
             button1.width = 50;
         }

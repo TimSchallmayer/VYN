@@ -58,7 +58,6 @@ void draw(SDL_Renderer *renderer) {
 void check_button(Button *button, SDL_Renderer *renderer) {
 
     SDL_Rect button_rect;
-    cout << button->height << button->width << endl;
     button_rect.h = button->height;
     button_rect.w = button->width;
     button_rect.x = button->x;
