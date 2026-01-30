@@ -2,6 +2,19 @@
 #include <SDL2/SDL.h>
 #pragma once
 
+//structs:
+struct Button
+{
+    bool hovered;
+    bool pressed;
+    int height;
+    int width;
+    int x;
+    int y;
+    SDL_Color color;
+};
+
+
 // Prototypen der Funktionen:
 SDL_Window* init_SDL(int w, int h);
 // SDL starten
@@ -14,3 +27,4 @@ bool quit(SDL_Renderer *renderer, SDL_Window *window);
 
 void draw(SDL_Renderer *renderer);
 // malt ein rotes rechteck an die aktuelle maus position
+void check_button(Button *button, SDL_Renderer *renderer);

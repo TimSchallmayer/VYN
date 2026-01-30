@@ -42,8 +42,8 @@ void draw(SDL_Renderer *renderer) {
     SDL_GetMouseState(&x, &y);
 
     SDL_Rect rect;
-    rect.h = 40;
-    rect.w = 40;
+    rect.h = 4;
+    rect.w = 4;
     rect.y = y - 20;
     rect.x = x - 20;
     
@@ -51,6 +51,23 @@ void draw(SDL_Renderer *renderer) {
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 0 , 0, 255);
     SDL_RenderFillRect(renderer, &rect);
+    SDL_RenderPresent(renderer);
+    return;
+}
+
+void check_button(Button *button, SDL_Renderer *renderer) {
+
+    SDL_Rect button_rect;
+    button_rect.h = button->height;
+    button_rect.w = button->width;
+    button_rect.x = button->x;
+    button_rect.y = button->y;
+    if (button->pressed && button->hovered)
+    {
+        button->color = {0, 255, 0, 255};
+    }
+    SDL_SetRenderDrawColor(renderer, button->color.r, button->color.g, button->color.b, button->color.a);
+    SDL_RenderFillRect(renderer, &button_rect);
     SDL_RenderPresent(renderer);
     return;
 }
