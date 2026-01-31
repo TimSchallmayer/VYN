@@ -3,7 +3,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "VYN.h"
+#include <algorithm>
 #include <string>
+
 using namespace std;
 
 SDL_Window *init_SDL(int w, int h) {
@@ -76,24 +78,39 @@ void check_button(Button *button, SDL_Renderer *renderer) {
 }
 void draw_text(SDL_Renderer *renderer, string inhalt, TTF_Font *font, int x, int y) {
     
-    if (inhalt.empty() || font == nullptr)
-    {
+    if (inhalt.empty())
+    {   
+        SDL_Rect start_rect;
+        start_rect.h = TTF_FontHeight(font);
+        start_rect.w = 3;
+        start_rect.y = y;
+        start_rect.x = x;
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &start_rect);
         return;
     }
-    int index_zeilenumbruch = inhalt.find_first_of("\n");
-    int spacing = TTF_FontLineSkip(font);
-    int width, height;
-    TTF_SizeText(font, inhalt.c_str(), &width, &height);
+    int lines = count(inhalt.begin(), inhalt.end(), '\n'), spacing = TTF_FontLineSkip(font);
 
+
+    int width, height;
+    int index = inhalt.rfind('\n');
+    if (index != string::npos)
+    {
+        string last_linebreak = inhalt.substr(index + 1);
+        TTF_SizeUTF8(font, last_linebreak.c_str(), &width, &height);
+    }
+    else {
+        TTF_SizeUTF8(font, inhalt.c_str(), &width, &height);
+    }
+    
     SDL_Rect indexer;
     indexer.h = TTF_FontHeight(font);
-    indexer.w = 5;
-    indexer.y = y;
-    indexer.x = x + width + 5;
+    indexer.w = 3;
+    indexer.y = y + spacing * lines;
+    indexer.x = x + width;
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &indexer);
-
-    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, inhalt.c_str(), {255, 255, 255, 255});
+    SDL_Surface *surface = TTF_RenderUTF8_Blended_Wrapped(font, inhalt.c_str(), {255, 255, 255, 255}, 5000);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_Rect text_rect = {x, y, surface->w, surface->h};
 

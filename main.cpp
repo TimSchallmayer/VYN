@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 
-const int HEIGHT = 600, WIDTH = 800;
+int HEIGHT = 700, WIDTH = 1000;
 
 
 int main(int argc, char* argv[]) {
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
         quit(render, window);
         return EXIT_FAILURE; 
     }
-
+    SDL_SetWindowResizable(window, SDL_TRUE);
     // Setup für die sachen die auf dem Bildschirm angezeigt werden
     TTF_Font *font = TTF_OpenFont("src/fonts/Lobster,Oleo_Script,Roboto/Roboto/static/Roboto_Condensed-ExtraLightItalic.ttf", 24);
     if (!font)
@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
     SDL_StartTextInput();
     while ( true )
     {   
+        SDL_GetWindowSize(window, &WIDTH, &HEIGHT);
         SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
         SDL_RenderClear(render);
 
@@ -60,7 +61,11 @@ int main(int argc, char* argv[]) {
             else if (event.type == SDL_KEYDOWN) {
                 if (event.key.keysym.sym == SDLK_BACKSPACE && !input.empty())
                 {
-                    input.pop_back();
+                    while (!input.empty() && (input.back() & 0xC0) == 0x80) {
+                        input.pop_back();
+                    }
+                    if (!input.empty()) input.pop_back();
+                    
                 }
                 if (event.key.keysym.sym == SDLK_RETURN)
                 {
@@ -103,7 +108,7 @@ int main(int argc, char* argv[]) {
         
         //draw(render);
         check_button(&button1, render);
-        draw_text(render, input, font, WIDTH / 6, HEIGHT / 4);
+        draw_text(render, input, font, WIDTH / 10, HEIGHT / 20);
         SDL_RenderPresent(render);
     }
     end_loop:
