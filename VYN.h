@@ -1,5 +1,6 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <string>
 #pragma once
 
 //structs:
@@ -28,3 +29,5 @@ bool quit(SDL_Renderer *renderer, SDL_Window *window);
 void draw(SDL_Renderer *renderer);
 // malt ein rotes rechteck an die aktuelle maus position
 void check_button(Button *button, SDL_Renderer *renderer);
+// mal einen button, der rnazoomt und die farbe ändert wernn man klickt
+void draw_text(SDL_Renderer *renderer, std::string inhalt, TTF_Font *font, int x, int y);

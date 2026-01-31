@@ -1,13 +1,20 @@
 #define SDL_MAIN_HANDLED
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include "VYN.h"
+#include <string>
 using namespace std;
 
 SDL_Window *init_SDL(int w, int h) {
 
     if (SDL_Init(SDL_INIT_EVENTS | SDL_INIT_VIDEO) < 0)
     {
+        cerr << "ERROR:" << SDL_GetError() << endl;
+        return nullptr;
+    }
+    if (TTF_Init() == -1) 
+    {    
         cerr << "ERROR:" << SDL_GetError() << endl;
         return nullptr;
     }
@@ -32,6 +39,7 @@ SDL_Renderer *init_renderer(SDL_Window *window) {
 bool quit(SDL_Renderer *renderer, SDL_Window *window) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
     return true;
 }
@@ -46,12 +54,8 @@ void draw(SDL_Renderer *renderer) {
     rect.w = 4;
     rect.y = y - 20;
     rect.x = x - 20;
-    
-    SDL_SetRenderDrawColor(renderer, 0, 0 , 0, 255);
-    SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 0 , 0, 255);
     SDL_RenderFillRect(renderer, &rect);
-    SDL_RenderPresent(renderer);
     return;
 }
 
@@ -66,10 +70,35 @@ void check_button(Button *button, SDL_Renderer *renderer) {
     {
         button->color = {0, 255, 0, 255};
     }
-    SDL_SetRenderDrawColor(renderer, 0, 0 , 0, 255);
-    SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, button->color.r, button->color.g, button->color.b, button->color.a);
     SDL_RenderFillRect(renderer, &button_rect);
-    SDL_RenderPresent(renderer);
     return;
+}
+void draw_text(SDL_Renderer *renderer, string inhalt, TTF_Font *font, int x, int y) {
+    
+    if (inhalt.empty() || font == nullptr)
+    {
+        return;
+    }
+    int index_zeilenumbruch = inhalt.find_first_of("\n");
+    int spacing = TTF_FontLineSkip(font);
+    int width, height;
+    TTF_SizeText(font, inhalt.c_str(), &width, &height);
+
+    SDL_Rect indexer;
+    indexer.h = TTF_FontHeight(font);
+    indexer.w = 5;
+    indexer.y = y;
+    indexer.x = x + width + 5;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderFillRect(renderer, &indexer);
+
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, inhalt.c_str(), {255, 255, 255, 255});
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect text_rect = {x, y, surface->w, surface->h};
+
+    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
+
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
 }
