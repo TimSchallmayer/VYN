@@ -31,7 +31,7 @@ void draw(SDL_Renderer *renderer);
 // malt ein rotes rechteck an die aktuelle maus position
 void check_button(Button *button, SDL_Renderer *renderer);
 // mal einen button, der rnazoomt und die farbe ändert wernn man klickt
-void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, std::vector<std::string> lines, std::string inhalt);
+void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, std::vector<std::string> lines, std::string inhalt, long int indexer_index);
 //malt den neuen text jedesmal auf basis des inhalts (aktuelle zeile) und des line vector, welche alle anderen zeilen enthählt
 void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer);
 // malt den textcursor

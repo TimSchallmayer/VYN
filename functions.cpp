@@ -77,14 +77,12 @@ void check_button(Button *button, SDL_Renderer *renderer) {
     SDL_RenderFillRect(renderer, &button_rect);
     return;
 }
-void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<string> lines, string inhalt) {
+void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<string> lines, string inhalt, long int indexer_index) {
     int spacing = TTF_FontLineSkip(font);
     SDL_Color white = {255, 255, 255, 255};
 
     if (lines.empty() && inhalt.empty()) {   
-        SDL_Rect start_rect = {x, y, 3, TTF_FontHeight(font)};
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &start_rect);
+        draw_indexer(x, y, 1, TTF_FontHeight(font), renderer);
         return;
     }
 
@@ -104,24 +102,35 @@ void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<stri
     }
 
     int indexer_x = 0;
+    //cout << "drawing..." << endl;
     if (!inhalt.empty()) {
         SDL_Surface *surface = TTF_RenderUTF8_Blended(font, inhalt.c_str(), white);
         if (surface) {
             SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_Rect dst = {x, y + spacing * i, surface->w, surface->h};
             SDL_RenderCopy(renderer, texture, NULL, &dst);
-            indexer_x = surface->w; 
+            cout << "drawing1:" << inhalt.length() + indexer_index << endl;
+            if (inhalt.length() != indexer_index * -1)
+            {
+                SDL_Surface *indexer_surface = TTF_RenderUTF8_Blended(font, inhalt.substr(0, indexer_index == 0 ? inhalt.length() :  inhalt.length() + indexer_index).c_str(), white);
+                indexer_x = indexer_surface->w;
+                SDL_FreeSurface(indexer_surface); 
+            }
+            else indexer_x == 0;
+
             SDL_DestroyTexture(texture);
+         //   cout << "drawing2..." << endl;
             SDL_FreeSurface(surface);
         }
     }
-    draw_indexer(x + indexer_x, y + spacing * i, 3, TTF_FontHeight(font), renderer);
+    draw_indexer(x + indexer_x, y + spacing * i, 1, TTF_FontHeight(font), renderer);
     return;
 }
 void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer) {
     
-    SDL_Rect indexer = {x , y, 3, height};
+    SDL_Rect indexer = {x , y, width, height};
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &indexer);
+  //  cout << "drawing3..." << endl;
     return;
 }

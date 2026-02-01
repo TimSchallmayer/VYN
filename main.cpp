@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
     SDL_Event event;
     string input = "";
     vector<string> text;
+    long int indexer_index = 0;
     SDL_StartTextInput();
     while ( true )
     {   
@@ -54,7 +55,7 @@ int main(int argc, char* argv[]) {
 
             else if (event.type == SDL_TEXTINPUT) {
                 if (event.text.text[0] != '\0') {
-                    input.append(event.text.text);
+                    input.insert(input.length() + (indexer_index != 0 ? indexer_index : 0), event.text.text);
                 //    cout << input << endl;
                  //   cout << event.text.text << endl;
                 }
@@ -78,9 +79,9 @@ int main(int argc, char* argv[]) {
                     text.push_back(input);
                     input.clear();
                 }
-                else if (event.key.keysym.sym == SDLK_RIGHT) {
-                    
-                } 
+                else if (event.key.keysym.sym == SDLK_LEFT && (input.length() != indexer_index * -1)) indexer_index -= 1;
+                else if (event.key.keysym.sym == SDLK_RIGHT && indexer_index < 0) indexer_index += 1;
+               // cout << "index:" << indexer_index;
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN && button1.hovered)
             {
@@ -117,7 +118,7 @@ int main(int argc, char* argv[]) {
         }
         //draw(render);
         check_button(&button1, render);
-        draw_text(render, font, WIDTH / 10, HEIGHT / 20, text, input);
+        draw_text(render, font, WIDTH / 10, HEIGHT / 20, text, input, indexer_index);
         SDL_RenderPresent(render);
     }
     end_loop:
