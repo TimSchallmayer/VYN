@@ -5,6 +5,7 @@
 #include "VYN.h"
 #include <algorithm>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -76,46 +77,51 @@ void check_button(Button *button, SDL_Renderer *renderer) {
     SDL_RenderFillRect(renderer, &button_rect);
     return;
 }
-void draw_text(SDL_Renderer *renderer, string inhalt, TTF_Font *font, int x, int y) {
-    
-    if (inhalt.empty())
-    {   
-        SDL_Rect start_rect;
-        start_rect.h = TTF_FontHeight(font);
-        start_rect.w = 3;
-        start_rect.y = y;
-        start_rect.x = x;
+void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<string> lines, string inhalt) {
+    int spacing = TTF_FontLineSkip(font);
+    SDL_Color white = {255, 255, 255, 255};
+
+    if (lines.empty() && inhalt.empty()) {   
+        SDL_Rect start_rect = {x, y, 3, TTF_FontHeight(font)};
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderFillRect(renderer, &start_rect);
         return;
     }
-    int lines = count(inhalt.begin(), inhalt.end(), '\n'), spacing = TTF_FontLineSkip(font);
 
+    int i = 0;
+    for (const string& line : lines) {
+        if (!line.empty()) {
+            SDL_Surface *surface = TTF_RenderUTF8_Blended(font, line.c_str(), white);
+            if (surface) {
+                SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+                SDL_Rect text_rect = {x, y + spacing * i, surface->w, surface->h};
+                SDL_RenderCopy(renderer, texture, NULL, &text_rect);
+                SDL_DestroyTexture(texture);
+                SDL_FreeSurface(surface);
+            }
+        }
+        i++;
+    }
 
-    int width, height;
-    int index = inhalt.rfind('\n');
-    if (index != string::npos)
-    {
-        string last_linebreak = inhalt.substr(index + 1);
-        TTF_SizeUTF8(font, last_linebreak.c_str(), &width, &height);
+    int indexer_x = 0;
+    if (!inhalt.empty()) {
+        SDL_Surface *surface = TTF_RenderUTF8_Blended(font, inhalt.c_str(), white);
+        if (surface) {
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+            SDL_Rect dst = {x, y + spacing * i, surface->w, surface->h};
+            SDL_RenderCopy(renderer, texture, NULL, &dst);
+            indexer_x = surface->w; 
+            SDL_DestroyTexture(texture);
+            SDL_FreeSurface(surface);
+        }
     }
-    else {
-        TTF_SizeUTF8(font, inhalt.c_str(), &width, &height);
-    }
+    draw_indexer(x + indexer_x, y + spacing * i, 3, TTF_FontHeight(font), renderer);
+    return;
+}
+void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer) {
     
-    SDL_Rect indexer;
-    indexer.h = TTF_FontHeight(font);
-    indexer.w = 3;
-    indexer.y = y + spacing * lines;
-    indexer.x = x + width;
+    SDL_Rect indexer = {x , y, 3, height};
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(renderer, &indexer);
-    SDL_Surface *surface = TTF_RenderUTF8_Blended_Wrapped(font, inhalt.c_str(), {255, 255, 255, 255}, 5000);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Rect text_rect = {x, y, surface->w, surface->h};
-
-    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
-
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    return;
 }

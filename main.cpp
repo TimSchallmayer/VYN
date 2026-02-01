@@ -4,6 +4,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "VYN.h"
 #include <string>
+#include <vector>
 using namespace std;
 
 int HEIGHT = 700, WIDTH = 1000;
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
     //SDL Eventschleife
     SDL_Event event;
     string input = "";
+    vector<string> text;
     SDL_StartTextInput();
     while ( true )
     {   
@@ -59,18 +61,26 @@ int main(int argc, char* argv[]) {
                 
             }
             else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_BACKSPACE && !input.empty())
+                if (event.key.keysym.sym == SDLK_BACKSPACE && (!input.empty() || !text.empty()))
                 {
+                    if (input.empty())
+                    {
+                        input = text[text.size() - 1];
+                        text.pop_back(); 
+                    }
                     while (!input.empty() && (input.back() & 0xC0) == 0x80) {
                         input.pop_back();
                     }
                     if (!input.empty()) input.pop_back();
-                    
                 }
-                if (event.key.keysym.sym == SDLK_RETURN)
+                else if (event.key.keysym.sym == SDLK_RETURN)
                 {
-                    input.append("\n");
+                    text.push_back(input);
+                    input.clear();
                 }
+                else if (event.key.keysym.sym == SDLK_RIGHT) {
+                    
+                } 
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN && button1.hovered)
             {
@@ -105,10 +115,9 @@ int main(int argc, char* argv[]) {
             button1.height = 30;
             button1.width = 50;
         }
-        
         //draw(render);
         check_button(&button1, render);
-        draw_text(render, input, font, WIDTH / 10, HEIGHT / 20);
+        draw_text(render, font, WIDTH / 10, HEIGHT / 20, text, input);
         SDL_RenderPresent(render);
     }
     end_loop:
