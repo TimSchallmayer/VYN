@@ -31,9 +31,11 @@ void draw(SDL_Renderer *renderer);
 // malt ein rotes rechteck an die aktuelle maus position
 void check_button(Button *button, SDL_Renderer *renderer);
 // mal einen button, der rnazoomt und die farbe ändert wernn man klickt
-void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, std::vector<std::string> lines, long int current_line_index, long int indexer_index);
+void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, std::vector<std::string> lines, long int current_line_index, int indexer_pos);
 //malt den neuen text jedesmal auf basis des inhalts (aktuelle zeile) und des line vector, welche alle anderen zeilen enthählt
 void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer);
 // malt den textcursor
-int render_aktuelle_zeile(std::string inhalt, TTF_Font *font, SDL_Renderer *renderer, int x, int y, int spacing, SDL_Color white, long int indexer_index, int i);
-//rendert die aktuelle zeile zwischen den bestehenden lines
+int utf8_char_len(unsigned char c);
+//gibt die Länge eines Zeichens zurück. Wichtig, weil die Länge bei utf8 zeichen anders ist.
+int utf8_char_count(const std::string& s);
+// gibt die ware anzahl an zeichen zurück in einem string

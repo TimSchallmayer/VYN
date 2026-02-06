@@ -77,7 +77,7 @@ void check_button(Button *button, SDL_Renderer *renderer) {
     SDL_RenderFillRect(renderer, &button_rect);
     return;
 }
-void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<string> lines, long int current_line_index, long int indexer_index) {
+void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<string> lines, long int current_line_index, int indexer_pos) {
     int spacing = TTF_FontLineSkip(font);
     SDL_Color white = {255, 255, 255, 255};
 
@@ -86,10 +86,7 @@ void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<stri
         cout << "empty" << endl;
         return;
     }
-    int i = 0, indexer_x = 0;
-    SDL_Surface *indexer_surface = TTF_RenderUTF8_Blended(font, lines[current_line_index].substr(0, lines[current_line_index].length() + indexer_index).c_str(), white); // berechnet die breite für die position des indexers
-    if (indexer_surface) indexer_x = indexer_surface->w;
-    SDL_FreeSurface(indexer_surface);
+    int i = 0;
     for (const string& line : lines) {
         if (!line.empty()) {
             SDL_Surface *surface = TTF_RenderUTF8_Blended(font, line.c_str(), white);
@@ -107,7 +104,7 @@ void draw_text(SDL_Renderer *renderer, TTF_Font *font, int x, int y, vector<stri
     //indexer_x = render_aktuelle_zeile(inhalt, font, renderer, x, y, spacing, white, indexer_index, i);
     
     //cout << "drawing..." << endl;
-    draw_indexer(x + indexer_x, y + spacing * current_line_index, 1, TTF_FontHeight(font), renderer);
+    draw_indexer(x + indexer_pos, y + spacing * current_line_index, 1, TTF_FontHeight(font), renderer);
     return;
 }
 void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer) {
@@ -118,29 +115,25 @@ void draw_indexer(int x, int y, int width, int height, SDL_Renderer *renderer) {
   //  cout << "drawing3..." << endl;
     return;
 }
-int render_aktuelle_zeile(string inhalt, TTF_Font *font, SDL_Renderer *renderer, int x, int y, int spacing, SDL_Color white, long int indexer_index, int i) {
+int utf8_char_len(unsigned char c) { 
+    if ((c & 0x80) == 0) return 1; 
+    if ((c & 0xE0) == 0xC0) return 2; 
+    if ((c & 0xF0) == 0xE0) return 3; 
+    if ((c & 0xF8) == 0xF0) return 4; 
+    return 1; 
+}
+int utf8_char_count(const string& s)
+{
+    int count = 0;
 
-    int indexer_x = 0;
-    if (!inhalt.empty()) {
-        SDL_Surface *surface = TTF_RenderUTF8_Blended(font, inhalt.c_str(), white);
-        if (surface) {
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_Rect text = {x, y + spacing * i, surface->w, surface->h};
-            SDL_RenderCopy(renderer, texture, NULL, &text);
-          //  cout << "drawing1:" << inhalt.length() + indexer_index << endl;
-            if (inhalt.length() != indexer_index * -1)
-            {
-                SDL_Surface *indexer_surface = TTF_RenderUTF8_Blended(font, inhalt.substr(0, indexer_index == 0 ? inhalt.length() :  inhalt.length() + indexer_index).c_str(), white);
-                indexer_x = indexer_surface->w;
-                SDL_FreeSurface(indexer_surface); 
-            }
-            else indexer_x = 0;
-            SDL_DestroyTexture(texture);
-         //   cout << "drawing2..." << endl;
-            SDL_FreeSurface(surface);
-        }
+    for (size_t i = 0; i < s.size(); i++)
+    {
+        unsigned char c = s[i];
+        if ((c & 0xC0) != 0x80)
+            count++;
     }
-    return indexer_x;
+
+    return count;
 }
 //III
 //MMM

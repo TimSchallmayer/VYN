@@ -8,7 +8,7 @@
 #include <stdlib.h>
 using namespace std;
 
-int HEIGHT = 700, WIDTH = 1000;
+int HEIGHT = 700, WIDTH = 1000, FONT_SIZE = 24;
 
 
 int main(int argc, char* argv[]) {
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     }
     SDL_SetWindowResizable(window, SDL_TRUE);
     // Setup für die sachen die auf dem Bildschirm angezeigt werden
-    TTF_Font *font = TTF_OpenFont("src/fonts/Lobster,Oleo_Script,Roboto/JetBrains_Mono/static/JetBrainsMono-Regular.ttf", 24);
+    TTF_Font *font = TTF_OpenFont("src/fonts/Lobster,Oleo_Script,Roboto/JetBrains_Mono/static/JetBrainsMono-Regular.ttf", FONT_SIZE);
     if (!font)
     {
         cout << TTF_GetError() << endl;
@@ -44,6 +44,8 @@ int main(int argc, char* argv[]) {
     vector<string> text;
     long int indexer_index = 0;
     long int crnt_ln = 0;
+    int breite_char, indexer_pos = 0;
+    TTF_SizeUTF8(font, "A", &breite_char, nullptr);
     SDL_StartTextInput();
     while ( true )
     {   
@@ -59,51 +61,48 @@ int main(int argc, char* argv[]) {
 
             else if (event.type == SDL_TEXTINPUT) {
                 if (event.text.text[0] != '\0') {
-                    input.insert(input.length() + indexer_index, event.text.text);
+                    input.insert(indexer_index, event.text.text);
+                    string s = event.text.text;
+                    indexer_index += s.length();
+                    indexer_pos += breite_char;
+
                 //    cout << input << endl;
                   //  cout << event.text.text << "input:" << input << endl;
                 }
                 
             }
             else if (event.type == SDL_KEYDOWN) {
-                if (event.key.keysym.sym == SDLK_BACKSPACE && !text.empty())
+                SDL_Keycode key = event.key.keysym.sym;
+                SDL_Keymod mod = (SDL_Keymod)event.key.keysym.mod;
+
+                if (key == SDLK_BACKSPACE && !text.empty())
                 {
-                    if ((input.empty() || (input.length() == indexer_index * -1)) && crnt_ln != 0)
+                    if (indexer_index != 0)
                     {
-                        if (input.empty()) indexer_index = 0;
+                        int start = indexer_index - 1;
+
+                        while (start > 0 && (input[start] & 0xC0) == 0x80)
+                            start--;
+
+                        int len = indexer_index - start;
+
+                        input.erase(start, len);
+                        indexer_index = start;
+                        indexer_pos -= breite_char; 
+                    }
+                    else if (crnt_ln > 0) {
                         crnt_ln -= 1;
-                    }
-                    else {
-                        int pos = (int)input.length() + indexer_index;
-
-                        if (pos > 0) {
-                            int to_erase = 1;
-
-                            while (pos - to_erase > 0 && (input[pos - to_erase] & 0xC0) == 0x80) {
-                                to_erase++;
-                            }
-                            input.erase(pos - to_erase, to_erase);
-                        }
-                    }
+                        indexer_index = text[crnt_ln].size();
+                        indexer_pos = utf8_char_count(text[crnt_ln]) * breite_char;
+                        text[crnt_ln].append(text[crnt_ln + 1]);
+                        text.erase(text.begin() + crnt_ln +1);
+                    }    
                 }
-                else if (event.key.keysym.sym == SDLK_RETURN && indexer_index == 0)
-                {   
-                    crnt_ln += 1;
-                    string new_empty_line = "";
-                    text.push_back(new_empty_line);
-                }
-                else if (event.key.keysym.sym == SDLK_RETURN && indexer_index != 0) 
-                {
-                    crnt_ln += 1;
-                    string new_line = input.substr(input.length() + indexer_index, input.length());
-                    input.erase(input.length() + indexer_index, input.length());
-                    text.insert(text.begin() + crnt_ln, new_line);
-                }
-                else if (event.key.keysym.sym == SDLK_LEFT) {
-
-                    if (input.length() != indexer_index * -1) {
-
-                        int pos = (int)input.length() + indexer_index;
+                else if (key == SDLK_LEFT && !text.empty()) {
+                    //cout << "left"<< endl;
+                    if (indexer_index != 0)
+                    {
+                        int pos = indexer_index;
 
                         if (pos >= 0) {
                             int to_erase = 1;
@@ -113,15 +112,18 @@ int main(int argc, char* argv[]) {
                             }
                             indexer_index -= to_erase;
                         }
+                        indexer_pos -= breite_char;
                     }
-                    else if (crnt_ln != 0)  {
-                        indexer_index = 0;
+                    else if (crnt_ln != 0) {
                         crnt_ln -= 1;
+                        indexer_index = text[crnt_ln].size();
+                        indexer_pos = utf8_char_count(text[crnt_ln]) * breite_char;
                     }
                 }
-                else if (event.key.keysym.sym == SDLK_RIGHT)  {
-                    if (indexer_index < 0) {
-                        int pos = (int)input.length() + indexer_index;
+                else if (key == SDLK_RIGHT) {
+                    if (indexer_index < input.length())
+                    {
+                        int pos = indexer_index;
 
                         if (pos >= 0)
                         {
@@ -133,62 +135,63 @@ int main(int argc, char* argv[]) {
                             }
                             indexer_index += to_move;
                         }
+                        indexer_pos += breite_char;
                     }
-                    else if (crnt_ln + 1 < text.size()) {
+                    else if(crnt_ln < text.size() -1) {
                         crnt_ln += 1;
-                        indexer_index = text[crnt_ln].length() * -1;        
+                        indexer_index = 0;
+                        indexer_pos = 0;
                     }
                 }
-                else if (event.key.keysym.sym == SDLK_UP && crnt_ln > 0) {
-                    crnt_ln -= 1;
-                    string &neuer_input = text[crnt_ln];
-                    int i = 0, best = 0, w, desired_x = indexer_index;
-                    int new_laenge = distance(neuer_input.begin(), neuer_input.end());
-                    int old_laenge = distance(input.begin(), input.end());
-                    if (new_laenge > old_laenge) desired_x = indexer_index - (new_laenge - old_laenge);
-                    else if (old_laenge > new_laenge) desired_x = indexer_index + (old_laenge - new_laenge);
-                    while(i <= neuer_input.size())
+                else if (key == SDLK_RETURN) {
+                    if (indexer_index != input.length())
                     {
-                        TTF_SizeUTF8(font, neuer_input.substr(0, i).c_str(), &w, NULL);
-
-                        if(w > desired_x)
-                            break;
-
-                        best = i;
-
-                        // UTF8 skip
-                        i++;
-                        while(i < neuer_input.size() && (neuer_input[i] & 0xC0) == 0x80)
-                            i++;
+                        string temp = input.substr(indexer_index, input.length() - indexer_index);
+                        input.erase(indexer_index, input.length() - indexer_index);
+                        crnt_ln += 1;
+                        text[crnt_ln].insert(crnt_ln, temp);
+                        indexer_index = 0;
+                        indexer_pos = 0;
                     }
-
-                    indexer_index = neuer_input.length() - best;
+                    else {
+                        crnt_ln += 1;
+                        text.push_back("");
+                        indexer_index = 0;
+                        indexer_pos = 0;
+                    }
                 }
-                else if (event.key.keysym.sym == SDLK_DOWN && crnt_ln + 1 < text.size()) {
+                else if ((mod & KMOD_CTRL) && key == SDLK_PLUS) {
+                    cout << "pressed" << endl;
+                    FONT_SIZE += 10;
+                    int anzahl = indexer_pos / breite_char;
+                    font = TTF_OpenFont("src/fonts/Lobster,Oleo_Script,Roboto/JetBrains_Mono/static/JetBrainsMono-Regular.ttf", FONT_SIZE);
+                    TTF_SizeUTF8(font, "A", &breite_char, nullptr);
+                   
+                    indexer_pos = anzahl * breite_char;
+                }
+                else if ((mod & KMOD_CTRL) && key == SDLK_MINUS) {
+                    cout << "pressed" << endl;
+                    FONT_SIZE -= 10;
+                    int anzahl = indexer_pos / breite_char;
+                    font = TTF_OpenFont("src/fonts/Lobster,Oleo_Script,Roboto/JetBrains_Mono/static/JetBrainsMono-Regular.ttf", FONT_SIZE);
+                    TTF_SizeUTF8(font, "A", &breite_char, nullptr);
+                    indexer_pos = anzahl * breite_char;
+                }
+                else if (key == SDLK_DOWN && crnt_ln < text.size() -1) {
+                    if (indexer_index > text[crnt_ln +1].length())
+                    {
+                        indexer_index = text[crnt_ln +1].length();
+                        indexer_pos = utf8_char_count(text[crnt_ln +1]) * breite_char;
+                    }
                     crnt_ln += 1;
-                    string &neuer_input = text[crnt_ln];
-                    int i = 0, best = 0, w, desired_x = indexer_index;
-                    int new_laenge = distance(neuer_input.begin(), neuer_input.end());
-                    int old_laenge = distance(input.begin(), input.end());
-                    if (new_laenge > old_laenge) desired_x = indexer_index - (new_laenge - old_laenge);
-                    else if (old_laenge > new_laenge) desired_x = indexer_index + (old_laenge - new_laenge);
-                    while(i <= neuer_input.size())
+                }
+                else if (key == SDLK_UP && crnt_ln > 0) {
+                    if (indexer_index > text[crnt_ln -1].length())
                     {
-                        TTF_SizeUTF8(font, neuer_input.substr(0, i).c_str(), &w, NULL);
-
-                        if(w > desired_x)
-                            break;
-
-                        best = i;
-
-                        // UTF8 skip
-                        i++;
-                        while(i < neuer_input.size() && (neuer_input[i] & 0xC0) == 0x80)
-                            i++;
+                        indexer_index = text[crnt_ln -1].length();
+                        indexer_pos = utf8_char_count(text[crnt_ln -1]) * breite_char;
                     }
-
-                    indexer_index = neuer_input.length() - best;
-               // cout << "index:" << indexer_index;
+                    crnt_ln -= 1;
                 }
             }
             else if (event.type == SDL_MOUSEBUTTONDOWN && button1.hovered)
@@ -225,8 +228,9 @@ int main(int argc, char* argv[]) {
             button1.width = 50;
         }
         //draw(render);
+       // cout << text.size() << endl;
         check_button(&button1, render);
-        draw_text(render, font, WIDTH / 10, HEIGHT / 20, text, crnt_ln, indexer_index);
+        draw_text(render, font, WIDTH / 10, HEIGHT / 20, text, crnt_ln, indexer_pos);
         SDL_RenderPresent(render);
     }
     end_loop:
