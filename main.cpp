@@ -146,10 +146,11 @@ int main(int argc, char* argv[]) {
                 else if (key == SDLK_RETURN) {
                     if (indexer_index != input.length())
                     {
-                        string temp = input.substr(indexer_index, input.length() - indexer_index);
-                        input.erase(indexer_index, input.length() - indexer_index);
+                        string temp = text[crnt_ln].substr(indexer_index);
+                        text[crnt_ln].erase(indexer_index);
                         crnt_ln += 1;
-                        text[crnt_ln].insert(crnt_ln, temp);
+                        text.insert(text.begin() + crnt_ln, temp);
+
                         indexer_index = 0;
                         indexer_pos = 0;
                     }
